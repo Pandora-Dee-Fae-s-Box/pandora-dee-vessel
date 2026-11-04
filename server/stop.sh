@@ -18,8 +18,9 @@ for pidfile in "$SERVER_DIR"/*.pid; do
 done
 
 # Fallback: kill any lingering processes started from this server directory.
+# Git Bash does not have pgrep, so we use ps + grep and tolerate the grep itself.
 for pattern in "jade serve" "grok-bridge.js"; do
-  pids=$(pgrep -f "$pattern" 2>/dev/null || true)
+  pids=$(ps -W 2>/dev/null | grep -F "$pattern" | grep -v grep | awk '{print $1}' || true)
   if [ -n "$pids" ]; then
     echo "Stopping lingering $pattern processes: $pids"
     echo "$pids" | xargs kill 2>/dev/null || true
