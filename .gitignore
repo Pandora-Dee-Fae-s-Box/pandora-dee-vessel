@@ -21,6 +21,15 @@ data/*.log
 data/*.lock
 data/*/state.
 
+# Local clones of sister repos
+jade-fleet/
+jade-vault/
+pandora-mcp-server/
+
+# Server logs and PIDs
+server/logs/
+server/*.pid
+
 # Temporary
 npm-debug.log
 npm-log/*.log
