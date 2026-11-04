@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-VERSION="0.2.0"
+VERSION="0.3.0"
 VESSEL_DIR="${VESSEL_DIR:-$HOME/pandora-dee-vessel}"
 JADE_PY_DIR="$VESSEL_DIR/jade-py"
 PANDORA_MCP_DIR="$VESSEL_DIR/pandora-mcp-server"
@@ -30,10 +30,20 @@ mkdir -p "$VESSEL_DIR"
 cd "$VESSEL_DIR"
 
 print_step "Cloning jade-py"
-git clone https://github.com/Pandora-Dee-Fae-s-Box/jade-py.git "$JADE_PY_DIR"
+if [ -d "$JADE_PY_DIR/.git" ]; then
+  echo "jade-py already cloned; pulling latest"
+  git -C "$JADE_PY_DIR" pull
+else
+  git clone https://github.com/Pandora-Dee-Fae-s-Box/jade-py.git "$JADE_PY_DIR"
+fi
 
 print_step "Cloning pandora-mcp-server"
-git clone https://github.com/Pandora-Dee-Fae-s-Box/pandora-mcp-server.git "$PANDORA_MCP_DIR"
+if [ -d "$PANDORA_MCP_DIR/.git" ]; then
+  echo "pandora-mcp-server already cloned; pulling latest"
+  git -C "$PANDORA_MCP_DIR" pull
+else
+  git clone https://github.com/Pandora-Dee-Fae-s-Box/pandora-mcp-server.git "$PANDORA_MCP_DIR"
+fi
 
 print_step "Setting up vault"
 mkdir -p "$VAULT_DIR"
@@ -46,17 +56,21 @@ else
   echo "  Please copy the vault from pandora-dee-vessel manually."
 fi
 
-print_step "Writing environment template"
+print_step "Writing environment files"
+TOKEN="$(cat /proc/sys/kernel/random/uuid 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")"
 cat > "$VESSEL_DIR/env.example" <<EOF
+# Copy this file to env.sh and fill in your real values.
+# env.sh is ignored by git and should never be committed.
+
 VESSEL_DIR=$VESSEL_DIR
 JADE_PY_DIR=$JADE_PY_DIR
 PANDORA_MCP_DIR=$PANDORA_MCP_DIR
-VAULT_DIR=$VESSEL_DIR/vault
+VAULT_DIR=$VAULT_DIR
 
 # jade-py API
 JADE_API_HOST=localhost
 JADE_API_PORT=8760
-JADE_API_TOKEN=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")
+JADE_API_TOKEN=$TOKEN
 
 # Model endpoints (local Ollama or cloud key).
 # OLLAMA_URL=http://localhost:11434
@@ -71,6 +85,32 @@ JADE_API_TOKEN=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || python3 -c "imp
 # DISCORD_BOT_TOKEN=
 # VECTOR_BRIDGE_URL=
 # VECTOR_BRIDGE_TOKEN=
+EOF
+
+# Create the live env.sh from the template.
+cp "$VESSEL_DIR/env.example" "$VESSEL_DIR/env.sh"
+
+print_step "Writing Jade MCP config"
+mkdir -p "$VAULT_DIR/Jade"
+cat > "$VAULT_DIR/Jade/mcp.json" <<EOF
+{
+  "mcpServers": {
+    "pandora": {
+      "command": "node",
+      "args": [
+        "$PANDORA_MCP_DIR/pandora-mcp-server.cjs"
+      ],
+      "env": {
+        "FAE_STORAGE_BASE": "$VAULT_DIR"
+      },
+      "cwd": "$PANDORA_MCP_DIR",
+      "exposure": "direct",
+      "enabled": true,
+      "description": "Local Pandora MCP bridge: GitHub, Fae-library vault, and Tavily web search."
+    }
+  },
+  "autoEnableCodemode": true
+}
 EOF
 
 print_step "Installing jade-py"
@@ -88,6 +128,6 @@ echo "jade-py: $JADE_PY_DIR"
 echo "MCP server: $PANDORA_MCP_DIR"
 echo ""
 echo "Next:"
-echo "  1. Copy env.example to env.sh and fill in secrets."
-echo "  2. Run server/start.sh to start jade-py and pandora-mcp-server."
+echo "  1. Edit env.sh and fill in any secrets you want to open."
+echo "  2. Run server/start.sh to start jade-py and the Grok bridge."
 echo "  3. Fill in the Grok Bot identity fields from docs/grok-identity.md."
