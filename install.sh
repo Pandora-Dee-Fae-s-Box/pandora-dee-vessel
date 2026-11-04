@@ -5,20 +5,30 @@
 
 set -euo pipefail
 
-VERSION="0.3.1"
+VERSION="0.3.2"
 VESSEL_DIR="${VESSEL_DIR:-$HOME/pandora-dee-vessel}"
 JADE_PY_DIR="$VESSEL_DIR/jade-py"
 PANDORA_MCP_DIR="$VESSEL_DIR/pandora-mcp-server"
 VAULT_DIR="$VESSEL_DIR/vault"
+
+# Git Bash on Windows often has 'python' but not 'python3'.
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON=python3
+elif command -v python >/dev/null 2>&1; then
+  PYTHON=python
+else
+  echo "ERROR: python3 or python is required but not found."
+  exit 1
+fi
 
 print_step() {
   echo ""
   echo "=== $1"
 }
 
-print_step "Checking dependencies"
+print_step "Checking dependencies (using $PYTHON)"
 
-for cmd in git curl node python3; do
+for cmd in git curl node; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "ERROR: $cmd is required but not found."
     exit 1
@@ -26,8 +36,8 @@ for cmd in git curl node python3; do
 done
 
 # pip may be available as python3 -m pip even if the pip command is missing.
-if ! python3 -m pip --version >/dev/null 2>&1; then
-  echo "ERROR: python3 pip is required but not working."
+if ! "$PYTHON" -m pip --version >/dev/null 2>&1; then
+  echo "ERROR: $PYTHON pip is required but not working."
   exit 1
 fi
 
@@ -63,7 +73,7 @@ else
 fi
 
 print_step "Writing environment files"
-TOKEN="$(python3 -c "import uuid; print(uuid.uuid4())")"
+TOKEN="$("$PYTHON" -c "import uuid; print(uuid.uuid4())")"
 cat > "$VESSEL_DIR/env.example" <<EOF
 # Copy this file to env.sh and fill in your real values.
 # env.sh is ignored by git and should never be committed.
@@ -121,7 +131,7 @@ EOF
 
 print_step "Installing jade-py"
 cd "$JADE_PY_DIR"
-python3 -m pip install -e ".[all]" || python3 -m pip install -e "."
+"$PYTHON" -m pip install -e ".[all]" || "$PYTHON" -m pip install -e "."
 
 print_step "Installing pandora-mcp-server dependencies"
 cd "$PANDORA_MCP_DIR"
