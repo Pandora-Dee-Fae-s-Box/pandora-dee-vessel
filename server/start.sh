@@ -15,7 +15,7 @@ fi
 VAULT_DIR="${VAULT_DIR:-$VESSEL_DIR/vault}"
 JADE_PY_DIR="${JADE_PY_DIR:-$VESSEL_DIR/jade-py}"
 GROK_BRIDGE_PORT="${GROK_PORT:-8780}"
-JADE_API_TOKEN="${JADE_API_TOKEN:-$(cat /proc/sys/kernel/random/uuid 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")}"
+JADE_API_TOKEN="${JADE_API_TOKEN:-$(python3 -c "import uuid; print(uuid.uuid4())")}"
 
 DAEMON=false
 STATUS=false
