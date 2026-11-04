@@ -10,7 +10,7 @@ secrets/
 *.p12
 *.env
 
-< !-- runtime and local data -->
+# Runtime and local data
 vault/.obsidian/
 vault/.idea/
 vault/.trash-*
@@ -22,6 +22,7 @@ data/*.lock
 data/*/state.
 
 # Local clones of sister repos
+jade-py/
 jade-fleet/
 jade-vault/
 pandora-mcp-server/
@@ -33,5 +34,5 @@ server/*.pid
 # Temporary
 npm-debug.log
 npm-log/*.log
-yearn-error.log
+yarn-error.log
 .DS_Store
