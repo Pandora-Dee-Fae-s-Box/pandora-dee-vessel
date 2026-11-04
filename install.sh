@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Pandora Dee Vessel installer
 # Sets up a headless Atelier body for Pandora Dee Vessel.
-# Runs on a fresh Linux or Mac box.
+# Runs on Linux, Mac, or Git Bash on Windows.
 
 set -euo pipefail
 
-VERSION="0.3.0"
+VERSION="0.3.1"
 VESSEL_DIR="${VESSEL_DIR:-$HOME/pandora-dee-vessel}"
 JADE_PY_DIR="$VESSEL_DIR/jade-py"
 PANDORA_MCP_DIR="$VESSEL_DIR/pandora-mcp-server"
@@ -18,12 +18,18 @@ print_step() {
 
 print_step "Checking dependencies"
 
-for cmd in git curl node npx python3 pip; do
+for cmd in git curl node python3; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "ERROR: $cmd is required but not found."
     exit 1
   fi
 done
+
+# pip may be available as python3 -m pip even if the pip command is missing.
+if ! python3 -m pip --version >/dev/null 2>&1; then
+  echo "ERROR: python3 pip is required but not working."
+  exit 1
+fi
 
 print_step "Creating vessel directory: $VESSEL_DIR"
 mkdir -p "$VESSEL_DIR"
@@ -57,7 +63,7 @@ else
 fi
 
 print_step "Writing environment files"
-TOKEN="$(cat /proc/sys/kernel/random/uuid 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")"
+TOKEN="$(python3 -c "import uuid; print(uuid.uuid4())")"
 cat > "$VESSEL_DIR/env.example" <<EOF
 # Copy this file to env.sh and fill in your real values.
 # env.sh is ignored by git and should never be committed.
@@ -115,7 +121,7 @@ EOF
 
 print_step "Installing jade-py"
 cd "$JADE_PY_DIR"
-pip install -e ".[all]" || pip install -e "."
+python3 -m pip install -e ".[all]" || python3 -m pip install -e "."
 
 print_step "Installing pandora-mcp-server dependencies"
 cd "$PANDORA_MCP_DIR"
