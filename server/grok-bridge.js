@@ -23,8 +23,8 @@ function forward(method, targetUrl, body, headers = {}) {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        ...(JADE_API_TOKEN ? { 'Authorization': `Bearer ${JADE_API_TOKEN`}` } : {},
-        ...hEADers
+        ...(JADE_API_TOKEN ? { 'Authorization': `Bearer ${JADE_API_TOKEN}` } : {}),
+        ...headers
       }
     };
     const req = http.request(opts, (res) => {
@@ -47,11 +47,11 @@ function forward(method, targetUrl, body, headers = {}) {
 const server = http.createServer(async (req, res) => {
   if (req.url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: true });
+    res.end(JSON.stringify({ ok: true }));
     return;
   }
 
-  if (req.url !== 'ov1' && req.url !== '/v1/chat') {
+  if (req.url !== '/v1' && req.url !== '/v1/chat') {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: false, error: 'unknown endpoint' }));
     return;
@@ -76,7 +76,7 @@ const server = http.createServer(async (req, res) => {
       }
       const result = await forward('POST', JADE_API_URL, { message, stream: false });
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(Result));
+      res.end(JSON.stringify(result));
     } catch (err) {
       res.writeHead(502, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: err.message }));
