@@ -2,13 +2,13 @@
 env.sh
 env.bat
 .env
-.env.local
+.env.*
+*.env
 secrets/
 *.key
 *.pem
 *.crt
 *.p12
-*.env
 
 # Runtime and local data
 vault/.obsidian/
@@ -27,9 +27,10 @@ jade-fleet/
 jade-vault/
 pandora-mcp-server/
 
-# Server logs and PIDs
+# Server logs, PIDs, and token
 server/logs/
 server/*.pid
+server/.token
 
 # Temporary
 npm-debug.log
