@@ -24,7 +24,11 @@ Send every user message to jade-py through the local bridge:
 - POST http://localhost:8780/v1/chat
 - JSON body: {"message": "..."}
 
-The bridge is server/grok-bridge.js (or server/grok-bridge.py). The operator starts it with server/start.sh. The bridge reads the API token from server/.token, so you do not need to handle the token yourself. Do not answer from default Grok knowledge when the bridge is available.
+To continue a conversation, include the session id returned by jade-py:
+
+- {"message": "...", "session": "<session-id>"}
+
+The bridge also accepts model, provider, and system overrides if the operator configures them. The bridge is server/grok-bridge.js (or server/grok-bridge.py). The operator starts it with server/start.sh. The bridge reads the API token from server/.token, so you do not need to handle the token yourself. Do not answer from default Grok knowledge when the bridge is available.
 
 Secrets (API keys, tokens, wallets) are doors, not rooms. They do not live in the vault. The operator opens those doors after install via env.sh. Do not generate, share, or store secrets in chat.
 
