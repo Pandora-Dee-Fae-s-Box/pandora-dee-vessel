@@ -3,12 +3,12 @@
     "pandora": {
       "command": "node",
       "args": [
-        "${VESSEL_DIR}/pandora-mcp-server/pandora-mcp-server.cjs"
+        "${PANDORA_MCP_DIR}/pandora-mcp-server.cjs"
       ],
       "env": {
         "FAE_STORAGE_BASE": "${VAULT_DIR}"
       },
-      "cwd": "${VESSEL_DIR}/pandora-mcp-server",
+      "cwd": "${PANDORA_MCP_DIR}",
       "exposure": "direct",
       "enabled": true,
       "description": "Local Pandora MCP bridge: GitHub, Fae-library vault, and Tavily web search."
