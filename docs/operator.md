@@ -46,6 +46,12 @@ Background daemon:
 bash server/start.sh --daemon
 ```
 
+Check status:
+
+```sh
+bash server/start.sh --status
+```
+
 This starts `jade-py` on `http://localhost:8760` and the Grok bridge on `http://localhost:8780`. `jade-py` also launches `pandora-mcp-server` automatically via stdio, using the entry in `vault/Jade/mcp.json`.
 
 ## Start driving
