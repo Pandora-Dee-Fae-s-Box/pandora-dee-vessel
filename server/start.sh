@@ -96,6 +96,14 @@ export JADE_VAULT_DIR="$VAULT_DIR"
 export JADE_API_HOST="${JADE_API_HOST:-localhost}"
 export JADE_API_PORT="${JADE_API_PORT:-8760}"
 export JADE_API_TOKEN="$JADE_API_TOKEN"
+
+# Model wiring: Grok API key drives the xAI provider.
+if [ -n "${GROK_API_KEY:-}" ]; then
+  export JADE_PROVIDER="${JADE_PROVIDER:-xai}"
+  export JADE_MODEL="${JADE_MODEL:-grok-beta}"
+  export JADE_API_KEY="${GROK_API_KEY}"
+fi
+
 if [ -n "${OLLAMA_URL:-}" ]; then
   export JADE_MODEL="${JADE_MODEL:-ollama}"
   export JADE_PROVIDER="ollama"
@@ -104,12 +112,17 @@ fi
 if [ -n "${OLLAMA_CLOUD_KEY:-}" ]; then
   export JADE_OLLAMA_CLOUD_KEY="$OLLAMA_CLOUD_KEY"
 fi
+
 "$PYTHON" -m pip install -e "." > "$SERVER_DIR/logs/jade-py-install.log" 2>&1
 "$PYTHON" -m jade serve > "$SERVER_DIR/logs/jade-py.log" 2>&1 &
 JADE_PID=$!
 echo $JADE_PID > "$SERVER_DIR/jade-py.pid"
 echo "jade-py daemon started on http://${JADE_API_HOST}:${JADE_API_PORT}"
+echo "  Atelier dashboard: http://${JADE_API_HOST}:${JADE_API_PORT}"
 echo "  API token: ${JADE_API_TOKEN}"
+if [ -n "${GROK_API_KEY:-}" ]; then
+  echo "  Model provider: ${JADE_PROVIDER} / ${JADE_MODEL}"
+fi
 
 # Wait for jade-py to be ready
 READY=false
@@ -147,8 +160,14 @@ fi
 if [ "$DAEMON" = true ]; then
   echo ""
   echo "Services running in background."
+  echo "Atelier: http://${JADE_API_HOST}:${JADE_API_PORT}"
+  echo "Grok bridge: http://localhost:${GROK_BRIDGE_PORT}/v1/chat"
   echo "Stop with: bash $SERVER_DIR/stop.sh"
   echo "Status with: bash $SERVER_DIR/start.sh --status"
+  echo ""
+  echo "Tailscale tip: set JADE_API_HOST to this machine's Tailscale IP"
+  echo "  and keep the API token secret. Then the Atelier is reachable"
+  echo "  from anywhere on your tailnet."
   exit 0
 fi
 
