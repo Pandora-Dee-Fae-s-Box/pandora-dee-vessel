@@ -11,6 +11,16 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
 - **Pandora Dee Rue** 🌉 — Discord bridge/herald
 - **Pandora Dee Vessel** 🚗 — this Grok Bot chassis body, on a headless computer
 
+## What the vessel is
+
+Pandora Dee Vessel is three things running from one `jade-py` process:
+
+1. **Atelier / dashboard** — the Jade Vault web UI at `http://localhost:8760`.
+2. **Grok Bot chassis** — the local bridge at `http://localhost:8780/v1/chat`.
+3. **MCP tool host** — GitHub, Fae-library, web search, npm builds, and messenger bridges.
+
+By default it binds to `localhost` for safety. With Tailscale or a strong token, the Atelier can be reached from anywhere.
+
 ## Layers
 
 ```text
@@ -24,6 +34,8 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
                                 |
                                 v (HTTP POST /v1/chat)
                         jade-py daemon (localhost:8760)
+                                |
+                                +-- Atelier dashboard (same port)
                                 |
                                 v (stdio MCP)
                 pandora-mcp-server (local bridge to GitHub, Fae-library, web)
@@ -51,7 +63,7 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
 ### jade-py
 - A Python implementation of the Jade Vault agent.
 - Reads the same vault layout as the browser app.
-- Provides `jade serve`, an HTTP API at `http://localhost:8760`.
+- Provides `jade serve`, an HTTP API and web dashboard at `http://localhost:8760`.
 - Runs real bash/python/node on the local host.
 - Hosts MCP servers (stdio or streamable HTTP).
 - Can act as a bridge to Vector and Discord via its own bridges.
