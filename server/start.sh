@@ -69,8 +69,8 @@ fi
 if [ -n "${OLLAMA_CLOUD_KEY:-}" ]; then
   export JADE_OLLAMA_CLOUD_KEY="$OLLAMA_CLOUD_KEY"
 fi
-pip install -e "." > "$SERVER_DIR/logs/jade-py-install.log" 2>&1
-jade serve > "$SERVER_DIR/logs/jade-py.log" 2>&1 &
+python3 -m pip install -e "." > "$SERVER_DIR/logs/jade-py-install.log" 2>&1
+python3 -m jade serve > "$SERVER_DIR/logs/jade-py.log" 2>&1 &
 JADE_PID=$!
 echo $JADE_PID > "$SERVER_DIR/jade-py.pid"
 echo "jade-py daemon started on http://${JADE_API_HOST}:${JADE_API_PORT}"
