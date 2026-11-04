@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-VERSION="0.4.1"
+VERSION="0.4.2"
 
 # ---------------------------------------------------------------------------
 # Non-interactive defaults: fill these in to skip the questions.
@@ -65,7 +65,7 @@ ask_secret() {
   echo "$value"
 }
 
-clear
+clear 2>/dev/null || true
 print_step "Pandora Dee Vessel installer v$VERSION"
 echo ""
 echo "You are about to build Fae's Mercedes: a headless Atelier body that lets"
