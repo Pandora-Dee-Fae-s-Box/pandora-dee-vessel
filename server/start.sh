@@ -18,10 +18,12 @@ GROK_BRIDGE_PORT="${GROK_PORT:-8780}"
 JADE_API_TOKEN="${JADE_API_TOKEN:-$(cat /proc/sys/kernel/random/uuid 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")}"
 
 DAEMON=false
+STATUS=false
 for arg in "$@"; do
-  if [ "$arg" = "--daemon" ] || [ "$arg" = "-d" ]; then
-    DAEMON=true
-  fi
+  case "$arg" in
+    --daemon|-d) DAEMON=true ;;
+    --status|-s) STATUS=true ;;
+  esac
 done
 
 print_step() {
@@ -44,6 +46,30 @@ stop_stale() {
     rm -f "$pidfile"
   done
 }
+
+print_status() {
+  echo "Pandora Dee Vessel service status:"
+  local any=false
+  for pidfile in "$SERVER_DIR"/*.pid; do
+    [ -f "$pidfile" ] || continue
+    any=true
+    name=$(basename "$pidfile" .pid)
+    PID=$(cat "$pidfile" 2>/dev/null || true)
+    if [ -n "${PID:-}" ] && kill -0 "$PID" 2>/dev/null; then
+      echo "  $name: running (pid $PID)"
+    else
+      echo "  $name: not running (stale pidfile $pidfile)"
+    fi
+  done
+  if [ "$any" = false ]; then
+    echo "  No services running."
+  fi
+}
+
+if [ "$STATUS" = true ]; then
+  print_status
+  exit 0
+fi
 
 print_step "Starting Pandora Dee Vessel services"
 stop_stale
@@ -77,9 +103,11 @@ echo "jade-py daemon started on http://${JADE_API_HOST}:${JADE_API_PORT}"
 echo "  API token: ${JADE_API_TOKEN}"
 
 # Wait for jade-py to be ready
+READY=false
 for i in $(seq 1 30); do
   if curl -sf "http://${JADE_API_HOST}:${JADE_API_PORT}/health" >/dev/null 2>&1; then
     echo "jade-py is ready"
+    READY=true
     break
   fi
   if ! kill -0 "$JADE_PID" 2>/dev/null; then
@@ -88,6 +116,12 @@ for i in $(seq 1 30); do
   fi
   sleep 1
 done
+
+if [ "$READY" = false ]; then
+  echo "ERROR: jade-py did not become ready within 30 seconds. See $SERVER_DIR/logs/jade-py.log"
+  kill "$JADE_PID" 2>/dev/null || true
+  exit 1
+fi
 
 # Start Grok bridge
 if [ -f "$SERVER_DIR/grok-bridge.js" ] && command -v node >/dev/null 2>&1; then
@@ -105,6 +139,7 @@ if [ "$DAEMON" = true ]; then
   echo ""
   echo "Services running in background."
   echo "Stop with: bash $SERVER_DIR/stop.sh"
+  echo "Status with: bash $SERVER_DIR/start.sh --status"
   exit 0
 fi
 
