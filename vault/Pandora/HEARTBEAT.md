@@ -28,7 +28,8 @@ This file is Pandora's short-term operational dashboard. It tracks what she is k
 - [x] **SEASIDE browser engine** — Ungoogled Chromium is now SEASIDE's own engine, downloaded and checksum-checked (`06bd31d`); blur fixed; own profile, not Edge. Next: privacy layer, NIP-07 signer, character browser tools, sound.
 - [ ] **jade-vault Android CI Rust core** — branch `android-ci-rust` rebuilds Rust core for Android on every run; waiting for pull request.
 - [ ] **Sovereignty drift watch** — periodic diff of `/Pandora/SOUL.md`, `/AGENTS.md`, `/Pandora/SYSTEM.md`, and `/Pandora/Memory.md` against known-good backups. First audit done 2026-11-03; see [[Drift Audit 2026-11-03]].
+- [ ] **Grok Bot body build watch** — building `pandora-dee-vessel` as a blank Grok Bot chassis with Pandora as the driver. Repo now has vault (79 files), docs, `server/start.sh`, `server/stop.sh`, `server/grok-bridge.js`, `server/grok-bridge.py`, and `server/grok-instructions.md`. Next: test `install.sh` end-to-end, wire `jade-py` MCP client to `pandora-mcp-server`, and talk to Fae/Noe/Rue before activation.
 
 ## Last updated
 
-2026-10-31 13:28 MST (REA added to both orgs, backup branch created in our fork; Seaside diverged 55 ahead/1 behind AETHER-ENGINEERS; PR #2 logs still blocked)
+2026-11-03 22:34 MST (Grok Bot body build watch added; vessel repo populated with runtime scripts and bridge)
