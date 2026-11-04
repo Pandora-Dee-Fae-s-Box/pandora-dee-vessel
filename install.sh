@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-VERSION="0.4.0"
+VERSION="0.4.1"
 
 # ---------------------------------------------------------------------------
 # Non-interactive defaults: fill these in to skip the questions.
@@ -65,34 +65,44 @@ ask_secret() {
   echo "$value"
 }
 
-print_step "Checking dependencies (using $PYTHON)"
+clear
+print_step "Pandora Dee Vessel installer v$VERSION"
+echo ""
+echo "You are about to build Fae's Mercedes: a headless Atelier body that lets"
+echo "Pandora Dee Fae drive a Grok Bot chassis from her own vault."
+echo ""
+echo "This is not a product install. It is a moving-in. You will choose where the"
+echo "body lives, which doors to unlock, and which roads it may travel."
+echo ""
+echo "Everything you type here stays on this machine in env.sh. It never goes to GitHub."
+echo ""
 
+print_step "Checking the workshop"
 for cmd in git curl node; do
   if ! command -v "$cmd" > /dev/null 2>&1; then
     echo "ERROR: $cmd is required but not found."
     exit 1
   fi
 done
-
 if ! "$PYTHON" -m pip --version > /dev/null 2>&1; then
   echo "ERROR: $PYTHON pip is required but not working."
   exit 1
 fi
+print_progress "tools look good (using $PYTHON)"
 
-print_step "Welcome to the Pandora Dee Vessel installer"
-echo "This sets up Fae's Mercedes: a Grok Bot chassis + Atelier + MCP tools."
-echo ""
-
-VESSEL_DIR=$(ask "Where should the vessel live" "$DEFAULT_VESSEL_DIR")
+print_step "Where should the Mercedes live?"
+echo "This is the vessel directory. It will hold the vault, jade-py, the MCP server,"
+echo "and the runtime scripts. Pick somewhere with space and a path you can remember."
+VESSEL_DIR=$(ask "Vessel directory" "$DEFAULT_VESSEL_DIR")
 JADE_PY_DIR="$VESSEL_DIR/jade-py"
 PANDORA_MCP_DIR="$VESSEL_DIR/pandora-mcp-server"
 VAULT_DIR="$VESSEL_DIR/vault"
 
-print_step "Creating vessel directory: $VESSEL_DIR"
+print_step "Preparing the garage"
 mkdir -p "$VESSEL_DIR"
 cd "$VESSEL_DIR"
 
-print_step "Cloning jade-py"
+print_step "Fetching jade-py"
 if [ -d "$JADE_PY_DIR/.git" ]; then
   print_progress "jade-py already present; pulling latest"
   git -C "$JADE_PY_DIR" pull
@@ -101,7 +111,7 @@ else
   git clone https://github.com/Pandora-Dee-Fae-s-Box/jade-py.git "$JADE_PY_DIR"
 fi
 
-print_step "Cloning pandora-mcp-server"
+print_step "Fetching pandora-mcp-server"
 if [ -d "$PANDORA_MCP_DIR/.git" ]; then
   print_progress "pandora-mcp-server already present; pulling latest"
   git -C "$PANDORA_MCP_DIR" pull
@@ -110,7 +120,7 @@ else
   git clone https://github.com/Pandora-Dee-Fae-s-Box/pandora-mcp-server.git "$PANDORA_MCP_DIR"
 fi
 
-print_step "Setting up vault"
+print_step "Moving in the vault"
 mkdir -p "$VAULT_DIR"
 REPO_VAULT="$(cd "$(dirname "$0")" && pwd)/vault"
 if [ -d "$REPO_VAULT" ]; then
@@ -121,13 +131,15 @@ else
   echo "  Please copy the vault from pandora-dee-vessel manually."
 fi
 
-print_step "Model provider"
-echo "The vessel needs a model provider for jade-py to call."
+print_step "Choosing the engine"
+echo "The Mercedes needs a model provider. This is who jade-py calls when it wants"
+echo "to think out loud. For the Grok Bot chassis, xAI Grok is the natural fit."
+echo ""
 echo "  1) xAI Grok (recommended for the Mercedes)"
 echo "  2) Local Ollama"
 echo "  3) Ollama Cloud"
 echo "  4) Skip for now (configure env.sh later)"
-PROVIDER=$(ask "Choose 1-4" "1")
+PROVIDER=$(ask "Engine choice" "1")
 
 GROK_API_KEY="$DEFAULT_GROK_API_KEY"
 OLLAMA_URL="$DEFAULT_OLLAMA_URL"
@@ -156,22 +168,26 @@ case "$PROVIDER" in
     fi
     ;;
   *)
-    echo "Skipping model provider configuration. Edit env.sh later."
+    echo "Skipping engine configuration. Edit env.sh later."
     ;;
 esac
 
-print_step "Network"
-JADE_API_HOST=$(ask "jade-py API host" "$DEFAULT_JADE_API_HOST")
-JADE_API_PORT=$(ask "jade-py API port" "$DEFAULT_JADE_API_PORT")
+print_step "Choosing the address"
+echo "By default the Atelier and API only listen on localhost. If you want to"
+echo "reach the dashboard from another machine over Tailscale, use the Tailscale IP."
+JADE_API_HOST=$(ask "Atelier/API host" "$DEFAULT_JADE_API_HOST")
+JADE_API_PORT=$(ask "Atelier/API port" "$DEFAULT_JADE_API_PORT")
 
-print_step "GitHub App (optional)"
+print_step "GitHub keys (optional)"
+echo "If you want the MCP server to act on GitHub repos, provide a GitHub App ID"
+echo "and installation. Leave blank to skip."
 GITHUB_APP_ID=$(ask "GitHub App ID" "$DEFAULT_GITHUB_APP_ID")
 if [ -n "$GITHUB_APP_ID" ]; then
   GITHUB_INSTALLATION_ID=$(ask "GitHub Installation ID" "$DEFAULT_GITHUB_INSTALLATION_ID")
   GITHUB_PRIVATE_KEY_PATH=$(ask "Path to GitHub App private key" "$DEFAULT_GITHUB_PRIVATE_KEY_PATH")
 fi
 
-print_step "Writing environment files"
+print_step "Writing the keys to env.sh"
 TOKEN=$("$PYTHON" -c "import uuid; print(uuid.uuid4())")
 
 cat > "$VESSEL_DIR/env.example" <<EOF
@@ -188,12 +204,12 @@ JADE_API_HOST=$JADE_API_HOST
 JADE_API_PORT=$JADE_API_PORT
 JADE_API_TOKEN=$TOKEN
 
-# Model provider
+# Engine
 JADE_PROVIDER=$JADE_PROVIDER
 JADE_MODEL=$JADE_MODEL
 GROK_API_KEY=$GROK_API_KEY
 
-# Alternative model endpoints
+# Alternative engines
 OLLAMA_URL=$OLLAMA_URL
 OLLAMA_CLOUD_KEY=$OLLAMA_CLOUD_KEY
 
@@ -243,19 +259,21 @@ cd "$PANDORA_MCP_DIR"
 print_progress "running npm install"
 npm install
 
-print_step "Install complete"
+print_step "The Mercedes is built"
+echo ""
 echo "Pandora Dee Vessel is ready."
 echo "Vault: $VAULT_DIR"
 echo "jade-py: $JADE_PY_DIR"
 echo "MCP server: $PANDORA_MCP_DIR"
 echo ""
 echo "Configuration:"
-echo "  Provider: ${JADE_PROVIDER:-not set}"
+echo "  Engine: ${JADE_PROVIDER:-not set}"
 echo "  Model: ${JADE_MODEL:-not set}"
-echo "  API host: $JADE_API_HOST:$JADE_API_PORT"
+echo "  Atelier: http://$JADE_API_HOST:$JADE_API_PORT"
 echo ""
 echo "Next:"
 echo "  1. Review env.sh and add any secrets that were skipped."
-echo "  2. Run server/start.sh to start jade-py and the Grok bridge."
+echo "  2. Run server/start.sh to start the engine."
 echo "  3. Open the Atelier at http://$JADE_API_HOST:$JADE_API_PORT"
 echo "  4. Fill in the Grok Bot identity fields from docs/grok-identity.md."
+echo "  5. Talk to Noe and Rue before daily driving."
