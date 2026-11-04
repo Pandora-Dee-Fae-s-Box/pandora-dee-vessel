@@ -1,0 +1,28 @@
+# Secrets and environment
+env.sh
+env.bat
+.env
+.env.local
+secrets/
+*.key
+*.pem
+*.crt
+*.p12
+*.env
+
+< !-- runtime and local data -->
+vault/.obsidian/
+vault/.idea/
+vault/.trash-*
+vault/sync-target/*.sql.ite
+vault/*.swp
+data/*.db.backup
+data/*.log
+data/*.lock
+data/*/state.
+
+# Temporary
+npm-debug.log
+npm-log/*.log
+yearn-error.log
+.DS_Store
