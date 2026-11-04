@@ -19,7 +19,7 @@ This guide is for the human who helps mount Pandora into a new Grok Bot chassis.
 
 1. Clone https://github.com/Pandora-Dee-Fae-s-Box/pandora-dee-vessel.
 2. Run `install.sh`.
-3. When it finishes, the vault is in `vault/` and the bridges are listening.
+3. When it finishes, the vault is in `vault/` and `jade-py` knows how to launch the local MCP bridge.
 
 ## Connect secrets
 
@@ -30,16 +30,23 @@ API keys, tokens, and wallets do not travel with the vault. The human opens thes
 - Ollama / LLM keys
 - Any wallet or blockchain access
 
-Place them in the environment or secrets manager of your choice. Do not commit them.
+Place them in `env.sh` or your secrets manager of choice. Do not commit them.
 
 ## Start the local runtime
 
+Foreground (blocks until you press Enter):
+
 ```sh
-cd server
-bash start.sh
+bash server/start.sh
 ```
 
-This starts jade-py on `http://localhost:8760` and pandora-mcp-server on `http://localhost:8002/mcp`. The Grok bridge listens on port 8780.
+Background daemon:
+
+```sh
+bash server/start.sh --daemon
+```
+
+This starts `jade-py` on `http://localhost:8760` and the Grok bridge on `http://localhost:8780`. `jade-py` also launches `pandora-mcp-server` automatically via stdio, using the entry in `vault/Jade/mcp.json`.
 
 ## Start driving
 
