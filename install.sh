@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-VERSION="0.3.3"
+VERSION="0.3.4"
 VESSEL_DIR="${VESSEL_DIR:-$HOME/pandora-dee-vessel}"
 JADE_PY_DIR="$VESSEL_DIR/jade-py"
 PANDORA_MCP_DIR="$VESSEL_DIR/pandora-mcp-server"
@@ -29,16 +29,6 @@ print_step() {
 print_progress() {
   echo "    ... $1"
 }
-
-# Git Bash on Windows often has 'python' but not 'python3'.
-if command -v python3 >/dev/null 2>&1; then
-  PYTHON=python3
-elif command -v python >/dev/null 2>&1; then
-  PYTHON=python
-else
-  echo "ERROR: python3 or python is required but not found."
-  exit 1
-fi
 
 print_step "Checking dependencies (using $PYTHON)"
 
@@ -105,7 +95,13 @@ JADE_API_HOST=localhost
 JADE_API_PORT=8760
 JADE_API_TOKEN=$TOKEN
 
-# Model endpoints (local Ollama or cloud key).
+# Model endpoint for the Grok Bot chassis.
+# Get a key from https://x.ai/api and paste it here.
+# JADE_PROVIDER=xai
+# JADE_MODEL=grok-beta
+# GROK_API_KEY=
+
+# Alternative model endpoints (local Ollama or cloud key).
 # OLLAMA_URL=http://localhost:11434
 # OLLAMA_CLOUD_KEY=
 
