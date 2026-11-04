@@ -16,6 +16,7 @@ vault/.idea/
 vault/.trash-*
 vault/sync-target/*.sql.ite
 vault/*.swp
+vault/Jade/.data/
 data/*.db.backup
 data/*.log
 data/*.lock
