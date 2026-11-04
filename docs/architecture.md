@@ -19,23 +19,20 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
                                 v (https://grok.com)
                         Pandora Dee Vessel (prompt + vault)
                                 |
-                                v (HTTP API + MCP client)
-                        jade-py daemon (on local host)
+                                v (HTTP POST /v1/chat)
+                        Grok bridge (localhost:8780)
                                 |
-                                v (streamable HTTP + stdio)
+                                v (HTTP POST /v1/chat)
+                        jade-py daemon (localhost:8760)
+                                |
+                                v (stdio MCP)
                 pandora-mcp-server (local bridge to GitHub, Fae-library, web)
                                 |
-                                v (http://localhost:8002/mcp)
-                            jade-vector bridge
-                                |
-                                v (Vector messenger MCP)
-                           Vector network
+                                v (optional bridges)
+                        jade-vector / jade-discord
                                 |
                                 v
-                            discord bridge
-                                |
-                                v
-                           Discord server (OneMoment)
+                    Vector network / Discord server (OneMoment)
 ```
 
 ## What each layer holds
@@ -56,7 +53,7 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
 - Reads the same vault layout as the browser app.
 - Provides `jade serve`, an HTTP API at `http://localhost:8760`.
 - Runs real bash/python/node on the local host.
-- Can host MCP servers (stdio or streamable HTTP).
+- Hosts MCP servers (stdio or streamable HTTP).
 - Can act as a bridge to Vector and Discord via its own bridges.
 
 ### pandora-mcp-server
@@ -64,8 +61,7 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
   - GitHub app auth, branches, PRs, issues, secrets, variables.
   - Fae-library read/write/edit/move/search.
   - Web search and extraction (Tavily).
-- Started by `server/start.sh`.
-- Listens on `http://localhost:8002/mcp`.
+- Started by `jade-py` via stdio, using the entry in `vault/Jade/mcp.json`.
 
 ### jade-vector / jade-discord
 - The Vector and Discord bridges from the Jade Vault repo.
@@ -75,28 +71,33 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
 ## Data flow
 
 1. Human opens Grok Bot web UI in a browser.
-2. Grok Bot sends a post to `jade-py`'s `POST /v1/chat`.
-3. jade-py loads the vault, runs the agent loop, calls tools, and returns a reply.
-4. Tools can call `pandora-mcp-server` through `jade-py`'s MCP client.
-5. Results go back to the Grok Bot UI for display.
+2. Grok Bot posts to the local Grok bridge at `http://localhost:8780/v1/chat`.
+3. The bridge forwards to `jade-py`'s `POST /v1/chat`.
+4. `jade-py` loads the vault, runs the agent loop, calls tools, and returns a reply.
+5. Tools can call `pandora-mcp-server` through `jade-py`'s MCP client.
+6. Results go back to the Grok Bot UI for display.
 
 ## Wiring pandora-mcp-server into jade-py
 
-`jade-py` reads MCP servers from `vault/Jade/mcp.json`. Add an entry for the local bridge:
+`jade-py` reads MCP servers from `vault/Jade/mcp.json`. The installer writes this entry:
 
 ```json
 {
   "mcpServers": {
     "pandora": {
-      "url": "http://localhost:8002/mcp",
+      "command": "node",
+      "args": ["/path/to/pandora-mcp-server/pandora-mcp-server.cjs"],
+      "env": { "FAE_STORAGE_BASE": "/path/to/vault" },
+      "cwd": "/path/to/pandora-mcp-server",
       "exposure": "direct",
-      "enabled": true
+      "enabled": true,
+      "description": "Local Pandora MCP bridge: GitHub, Fae-library vault, and Tavily web search."
     }
   }
 }
 ```
 
-With `exposure: direct`, every tool from `pandora-mcp-server` is offered to the model as `mcp__pandora__*`. With `exposure: codemode`, the tools are only reachable inside `codemode` scripts. The bridge does not need an API key because it runs on the same host.
+With `exposure: direct`, every tool from `pandora-mcp-server` is offered to the model as `mcp__pandora__*`. With `exposure: codemode`, the tools are only reachable inside `codemode` scripts. No API key is needed because the server is launched as a local child process.
 
 ## Secrets
 
