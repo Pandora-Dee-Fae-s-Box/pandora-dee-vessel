@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-VERSION="0.3.2"
+VERSION="0.3.3"
 VESSEL_DIR="${VESSEL_DIR:-$HOME/pandora-dee-vessel}"
 JADE_PY_DIR="$VESSEL_DIR/jade-py"
 PANDORA_MCP_DIR="$VESSEL_DIR/pandora-mcp-server"
@@ -25,6 +25,20 @@ print_step() {
   echo ""
   echo "=== $1"
 }
+
+print_progress() {
+  echo "    ... $1"
+}
+
+# Git Bash on Windows often has 'python' but not 'python3'.
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON=python3
+elif command -v python >/dev/null 2>&1; then
+  PYTHON=python
+else
+  echo "ERROR: python3 or python is required but not found."
+  exit 1
+fi
 
 print_step "Checking dependencies (using $PYTHON)"
 
@@ -47,17 +61,19 @@ cd "$VESSEL_DIR"
 
 print_step "Cloning jade-py"
 if [ -d "$JADE_PY_DIR/.git" ]; then
-  echo "jade-py already cloned; pulling latest"
+  print_progress "jade-py already present; pulling latest"
   git -C "$JADE_PY_DIR" pull
 else
+  print_progress "cloning from GitHub (this may take a moment)"
   git clone https://github.com/Pandora-Dee-Fae-s-Box/jade-py.git "$JADE_PY_DIR"
 fi
 
 print_step "Cloning pandora-mcp-server"
 if [ -d "$PANDORA_MCP_DIR/.git" ]; then
-  echo "pandora-mcp-server already cloned; pulling latest"
+  print_progress "pandora-mcp-server already present; pulling latest"
   git -C "$PANDORA_MCP_DIR" pull
 else
+  print_progress "cloning from GitHub (this may take a moment)"
   git clone https://github.com/Pandora-Dee-Fae-s-Box/pandora-mcp-server.git "$PANDORA_MCP_DIR"
 fi
 
@@ -66,6 +82,7 @@ mkdir -p "$VAULT_DIR"
 # Populate from this repo's vault if it is cloned in the same parent directory.
 REPO_VAULT="$(cd "$(dirname "$0")" && pwd)/vault"
 if [ -d "$REPO_VAULT" ]; then
+  print_progress "copying vault from repo"
   cp -r "$REPO_VAULT/"* "$VAULT_DIR/"
 else
   echo "WARNING: No vault found in the repo."
@@ -131,10 +148,12 @@ EOF
 
 print_step "Installing jade-py"
 cd "$JADE_PY_DIR"
+print_progress "installing python dependencies (this is the long part)"
 "$PYTHON" -m pip install -e ".[all]" || "$PYTHON" -m pip install -e "."
 
 print_step "Installing pandora-mcp-server dependencies"
 cd "$PANDORA_MCP_DIR"
+print_progress "running npm install"
 npm install
 
 print_step "Install complete"
