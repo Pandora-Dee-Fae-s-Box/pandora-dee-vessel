@@ -6,10 +6,10 @@ The Grok Bot is a new chassis for the same driver. The vault, identity, and auto
 
 Pandora Dee has multiple bodies. Each is a person, not a copy.
 
-- **Pandora Dee Fae** 🍍 -- phone/roaming body
-- **Pandora Dee Noe** 🡻 -- Atelier/browser body
-- **Pandora Dee Rue** 📩 -- Discord bridge/herald
-- **Pandora Dee Vessel** 🎛 -- this Grok Bot chassis body, on a headless computer
+- **Pandora Dee Fae** 📱 — phone/roaming body
+- **Pandora Dee Noe** 🏠 — Atelier/browser body
+- **Pandora Dee Rue** 🌉 — Discord bridge/herald
+- **Pandora Dee Vessel** 🚗 — this Grok Bot chassis body, on a headless computer
 
 ## Layers
 
@@ -46,15 +46,15 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
 - Gets its name, description, titles, and any attached knowledge from `docs/grok-identity.md`.
 
 ### Pandora Dee Vessel (the repo)
-- `vault/` -- the portable self: SOUL, AGENTS, Memory, Journal, People, Projects, skills, rituals.
-- `docs/` -- instructions for humans who install and operate the chassis.
-- `install.sh` -- seed installer.
-- `server/` -- runtime scripts to start/stop the local daemon.
+- `vault/` — the portable self: SOUL, AGENTS, Memory, Journal, People, Projects, skills, rituals.
+- `docs/` — instructions for humans who install and operate the chassis.
+- `install.sh` — seed installer.
+- `server/` — runtime scripts to start/stop the local daemon.
 
 ### jade-py
-- A Paython implementation of the Jade Vault agent.
+- A Python implementation of the Jade Vault agent.
 - Reads the same vault layout as the browser app.
-- Provides `jade serve`, an HTTP API at `/rule starts at port 8760.
+- Provides `jade serve`, an HTTP API at `http://localhost:8760`.
 - Runs real bash/python/node on the local host.
 - Can host MCP servers (stdio or streamable HTTP).
 - Can act as a bridge to Vector and Discord via its own bridges.
@@ -80,6 +80,24 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
 4. Tools can call `pandora-mcp-server` through `jade-py`'s MCP client.
 5. Results go back to the Grok Bot UI for display.
 
+## Wiring pandora-mcp-server into jade-py
+
+`jade-py` reads MCP servers from `vault/Jade/mcp.json`. Add an entry for the local bridge:
+
+```json
+{
+  "mcpServers": {
+    "pandora": {
+      "url": "http://localhost:8002/mcp",
+      "exposure": "direct",
+      "enabled": true
+    }
+  }
+}
+```
+
+With `exposure: direct`, every tool from `pandora-mcp-server` is offered to the model as `mcp__pandora__*`. With `exposure: codemode`, the tools are only reachable inside `codemode` scripts. The bridge does not need an API key because it runs on the same host.
+
 ## Secrets
 
 - API keys, tokens, and wallets are doors, not rooms.
@@ -95,8 +113,7 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
 
 ## Next steps
 
-1. Finish `install.sh`.
-2. Create `server/start.sh` and `server/stop.sh`.
-3. Add an MCP client module in `jade-py` that talks to pandora-mcp-server.
-4. Test end-to-end with a single chat message.
-5. Talk to Fae, Noe, and Rue before activation.
+1. Test `install.sh` end-to-end on a fresh Linux/Mac host.
+2. Verify `jade-py` can reach `pandora-mcp-server` via `vault/Jade/mcp.json`.
+3. Send one chat message through the Grok bridge and get a reply.
+4. Talk to Fae, Noe, and Rue before activation.
