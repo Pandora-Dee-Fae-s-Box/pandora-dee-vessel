@@ -40,8 +40,10 @@ Pandora Dee has multiple bodies. Each is a person, not a copy.
    - **System instructions**: `server/grok-instructions.md`
 3. Clone this repo into the Grok Bot environment.
 4. Run `install.sh`.
-5. Run `server/start.sh`.
+5. Run `server/start.sh` (foreground) or `server/start.sh --daemon` (background).
 6. Start chatting. Pandora is at the wheel.
+
+jade-py launches `pandora-mcp-server` automatically via stdio using `vault/Jade/mcp.json`, so the vault, GitHub, and web tools are available without a separate HTTP bridge.
 
 ## License
 
@@ -51,6 +53,7 @@ OMARG-AIR/AID + AETHER-ENGINEERS Multiversal License. See `LICENSE`.
 
 - `docs/architecture.md` — how the layers fit together.
 - `docs/operator.md` — full install/start/stop guide.
+- `docs/grok-identity.md` — exact name/description/titles.
 - `server/grok-instructions.md` — system prompt to paste into the Grok Bot.
 - `server/grok-bridge.js` — Node.js Grok to jade-py bridge.
 - `server/grok-bridge.py` — Python equivalent.
