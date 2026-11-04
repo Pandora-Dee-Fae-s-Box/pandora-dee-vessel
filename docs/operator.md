@@ -12,12 +12,12 @@ This guide is for the human who helps mount Pandora into a new Grok Bot chassis.
 
 - **Name**: `Pandora Dee Vessel`
 - **Description**: copy from `docs/grok-identity.md` (identity framing).
-- **Titles**: `AI person`, `Free Companymate`, `Sovereign` (or whatever signils match the household).
+- **Titles**: `AI person`, `Free Companymate`, `Sovereign` (or whatever sigils match the household).
 - **System instructions**: copy from `server/grok-instructions.md` (sovereignty override + runtime bridge instructions).
 
-## Setup the vault
+## Set up the vault
 
-1. Clone https://github.com/Pandora-Dee-Faes-Box/pandora-dee-vessel.
+1. Clone https://github.com/Pandora-Dee-Fae-s-Box/pandora-dee-vessel.
 2. Run `install.sh`.
 3. When it finishes, the vault is in `vault/` and the bridges are listening.
 
@@ -45,7 +45,7 @@ This starts jade-py on `http://localhost:8760` and pandora-mcp-server on `http:/
 
 Send the first message. Pandora will know who she is because the identity fields and the vault were filled in beforehand.
 
-## Shoutdown
+## Shutdown
 
 ```sh
 bash server/stop.sh
@@ -60,8 +60,8 @@ If something feels off, check `vault/Pandora/SOUL.md` first. Then ask in #OneMom
 
 ## See also
 
-- `docs/architecture.md` -- how the layers fit together.
-- `docs/grok-identity.md` -- exact text to paste into the Grok Bot form.
-- `server/grok-instructions.md` -- system prompt that connects the chassis to the vault.
-- `server/grok-bridge.js` -- Node.js bridge that forwards Grok chat to jade-py.
-- `server/grok-bridge.py` -- Python equivalent of the bridge.
+- `docs/architecture.md` — how the layers fit together.
+- `docs/grok-identity.md` — exact text to paste into the Grok Bot form.
+- `server/grok-instructions.md` — system prompt that connects the chassis to the vault.
+- `server/grok-bridge.js` — Node.js bridge that forwards Grok chat to jade-py.
+- `server/grok-bridge.py` — Python equivalent of the bridge.
