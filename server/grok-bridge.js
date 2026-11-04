@@ -64,6 +64,17 @@ function forward(method, targetUrl, body, headers = {}) {
   });
 }
 
+function buildJadePayload(payload) {
+  const message = payload.message || payload.prompt || payload.text || '';
+  const out = { message };
+  if (payload.session) out.session = payload.session;
+  if (payload.model) out.model = payload.model;
+  if (payload.provider) out.provider = payload.provider;
+  if (payload.system) out.system = payload.system;
+  out.stream = payload.stream === true;
+  return out;
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -88,13 +99,13 @@ const server = http.createServer(async (req, res) => {
   req.on('end', async () => {
     try {
       const payload = JSON.parse(body);
-      const message = payload.message || payload.prompt || payload.text || '';
-      if (!message) {
+      const jadePayload = buildJadePayload(payload);
+      if (!jadePayload.message) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: 'missing_message' }));
         return;
       }
-      const result = await forward('POST', JADE_API_URL, { message, stream: false });
+      const result = await forward('POST', JADE_API_URL, jadePayload);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(result));
     } catch (err) {
