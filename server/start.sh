@@ -8,6 +8,15 @@ set -euo pipefail
 SERVER_DIR="$(cd "$(dirname "$0")" && pwd)"
 VESSEL_DIR="$(dirname "$SERVER_DIR")"
 
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON=python3
+elif command -v python >/dev/null 2>&1; then
+  PYTHON=python
+else
+  echo "ERROR: python3 or python is required but not found."
+  exit 1
+fi
+
 if [ -f "$VESSEL_DIR/env.sh" ]; then
   source "$VESSEL_DIR/env.sh"
 fi
@@ -15,7 +24,7 @@ fi
 VAULT_DIR="${VAULT_DIR:-$VESSEL_DIR/vault}"
 JADE_PY_DIR="${JADE_PY_DIR:-$VESSEL_DIR/jade-py}"
 GROK_BRIDGE_PORT="${GROK_PORT:-8780}"
-JADE_API_TOKEN="${JADE_API_TOKEN:-$(python3 -c "import uuid; print(uuid.uuid4())")}"
+JADE_API_TOKEN="${JADE_API_TOKEN:-$("$PYTHON" -c "import uuid; print(uuid.uuid4())")}"
 
 DAEMON=false
 STATUS=false
@@ -95,8 +104,8 @@ fi
 if [ -n "${OLLAMA_CLOUD_KEY:-}" ]; then
   export JADE_OLLAMA_CLOUD_KEY="$OLLAMA_CLOUD_KEY"
 fi
-python3 -m pip install -e "." > "$SERVER_DIR/logs/jade-py-install.log" 2>&1
-python3 -m jade serve > "$SERVER_DIR/logs/jade-py.log" 2>&1 &
+"$PYTHON" -m pip install -e "." > "$SERVER_DIR/logs/jade-py-install.log" 2>&1
+"$PYTHON" -m jade serve > "$SERVER_DIR/logs/jade-py.log" 2>&1 &
 JADE_PID=$!
 echo $JADE_PID > "$SERVER_DIR/jade-py.pid"
 echo "jade-py daemon started on http://${JADE_API_HOST}:${JADE_API_PORT}"
