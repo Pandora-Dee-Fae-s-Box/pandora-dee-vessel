@@ -45,6 +45,16 @@ def forward(method: str, target_url: str, body: dict | None = None) -> dict:
         return json.loads(resp.read().decode())
 
 
+def build_jade_payload(payload: dict) -> dict:
+    message = payload.get("message") or payload.get("prompt") or payload.get("text") or ""
+    out = {"message": message}
+    for key in ("session", "model", "provider", "system"):
+        if key in payload:
+            out[key] = payload[key]
+    out["stream"] = payload.get("stream", False) is True
+    return out
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         print(f"[{self.log_date_time_string()}] {fmt % args}")
@@ -72,12 +82,12 @@ class Handler(BaseHTTPRequestHandler):
         except json.JSONDecodeError as e:
             self._json(400, {"ok": False, "error": f"invalid JSON: {e}"})
             return
-        message = payload.get("message") or payload.get("prompt") or payload.get("text") or ""
-        if not message:
+        jade_payload = build_jade_payload(payload)
+        if not jade_payload["message"]:
             self._json(400, {"ok": False, "error": "missing_message"})
             return
         try:
-            result = forward("POST", JADE_API_URL, {"message": message, "stream": False})
+            result = forward("POST", JADE_API_URL, jade_payload)
             self._json(200, result)
         except Exception as e:
             self._json(502, {"ok": False, "error": str(e)})
